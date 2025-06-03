@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Advanced Web Technologies Quiz</title>
+  <style>
+    /* Google Fonts Import */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Poppins', sans-serif;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      padding: 30px 40px 40px;
+      border-radius: 15px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      user-select: none;
+    }
+
+    #progress-bar {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      height: 10px;
+      border-radius: 6px;
+      margin: 15px 0 30px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+    #progress-bar-fill {
+      height: 100%;
+      background: #22c1c3;
+      border-radius: 6px;
+      width: 0;
+      transition: width 0.4s ease-in-out;
+    }
+
+    #question {
+      font-size: 1.3rem;
+      margin-bottom: 25px;
+      text-align: center;
+      min-height: 60px;
+      user-select: none;
+    }
+
+    #answer-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      width: 100%;
+    }
+
+    button.btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 15px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #fff;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      user-select: none;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    }
+
+    button.btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.35);
+      box-shadow: 0 6px 10px rgba(0,0,0,0.2);
+      transform: translateY(-3px);
+    }
+    button.btn:disabled {
+      cursor: default;
+      opacity: 0.75;
+      box-shadow: none;
+      transform: none;
+    }
+
+    button.correct {
+      background: #27ae60 !important;
+      border-color: #1e8449 !important;
+      color: #ecf0f1 !important;
+      box-shadow: 0 0 10px #2ecc71;
+    }
+
+    button.wrong {
+      background: #e74c3c !important;
+      border-color: #c0392b !important;
+      color: #f6f6f6 !important;
+      box-shadow: 0 0 10px #e74c3c;
+    }
+
+    #next-btn {
+      margin-top: 30px;
+      padding: 12px 30px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 30px;
+      background: #22c1c3;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(34,193,195,0.6);
+      transition: background 0.3s ease;
+      user-select: none;
+      display: none;
+      align-self: center;
+    }
+    #next-btn:hover {
+      background: #17a2a5;
+    }
+
+    #result-container {
+      text-align: center;
+      margin-top: 30px;
+      display: none;
+      user-select: none;
+    }
+
+    #score {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-top: 10px;
+      margin-bottom: 25px;
+      color: #22c1c3;
+    }
+
+    #restart-btn {
+      background: #764ba2;
+      border: none;
+      color: #fff;
+      padding: 12px 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(118,75,162,0.6);
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+    #restart-btn:hover {
+      background: #5a367f;
+    }
+
+    @media (max-width: 480px) {
+      #answer-buttons {
+        grid-template-columns: 1fr;
+      }
+      .container {
+        padding: 25px 20px 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main" aria-labelledby="quiz-title">
+    <h1 id="quiz-title">Advanced Web Technologies Quiz</h1>
+    <div id="progress-bar" aria-hidden="true">
+      <div id="progress-bar-fill"></div>
+    </div>
+    <div id="quiz">
+      <div id="question" aria-live="polite" aria-atomic="true"></div>
+      <div id="answer-buttons" role="list"></div>
+      <button id="next-btn" aria-label="Next Question">Next</button>
+    </div>
+    <div id="result-container" role="region" aria-live="polite" aria-atomic="true">
+      <div>Quiz Completed!</div>
+      <div id="score"></div>
+      <button id="restart-btn">Restart Quiz</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "What does AJAX stand for?",
+        answers: [
+          { text: "Asynchronous JavaScript and XML", correct: true },
+          { text: "Advanced JavaScript and XHTML", correct: false },
+          { text: "Application JSON and XML", correct: false },
+          { text: "Async Java App Extension", correct: false }
+        ]
+      },
+      {
+        question: "Which of the following is a valid Web Component?",
+        answers: [
+          { text: "&lt;shadow-root&gt;", correct: false },
+          { text: "&lt;template&gt;", correct: true },
+          { text: "&lt;style-scope&gt;", correct: false },
+          { text: "&lt;web-core&gt;", correct: false }
+        ]
+      },
+      {
+        question: "What is the main use of Service Workers?",
+        answers: [
+          { text: "Load JS files", correct: false },
+          { text: "Background sync & caching", correct: true },
+          { text: "Server communication", correct: false },
+          { text: "Authentication", correct: false }
+        ]
+      },
+      {
+        question: "Which JavaScript method is used to fetch data from an API?",
+        answers: [
+          { text: "get()", correct: false },
+          { text: "retrieve()", correct: false },
+          { text: "fetch()", correct: true },
+          { text: "ajaxCall()", correct: false }
+        ]
+      },
+      {
+        question: "What does the CSS 'var()' function do?",
+        answers: [
+          { text: "Creates a local variable", correct: false },
+          { text: "References a custom property", correct: true },
+          { text: "Validates a rule", correct: false },
+          { text: "Varies the font weight", correct: false }
+        ]
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const questionEl = document.getElementById('question');
+    const answerButtons = document.getElementById('answer-buttons');
+    const nextBtn = document.getElementById('next-btn');
+    const progressBarFill = document.getElementById('progress-bar-fill');
+    const resultContainer = document.getElementById('result-container');
+    const scoreEl = document.getElementById('score');
+    const quizContainer = document.getElementById('quiz');
+    const restartBtn = document.getElementById('restart-btn');
+
+    function showQuestion() {
+      resetState();
+
+      const currentQuestion = questions[currentQuestionIndex];
+      questionEl.textContent = currentQuestion.question;
+
+      currentQuestion.answers.forEach(answer => {
+        const button = document.createElement('button');
+        button.innerHTML = answer.text;
+        button.classList.add('btn');
+        button.setAttribute('role', 'listitem');
+        button.addEventListener('click', () => selectAnswer(button, answer.correct));
+        answerButtons.appendChild(button);
+      });
+
+      updateProgressBar();
+    }
+
+    function resetState() {
+      nextBtn.style.display = 'none';
+      while (answerButtons.firstChild) {
+        answerButtons.removeChild(answerButtons.firstChild);
+      }
+    }
+
+    function selectAnswer(button, correct) {
+      const buttons = answerButtons.children;
+
+      // Disable all buttons
+      Array.from(buttons).forEach(btn => {
+        btn.disabled = true;
+      });
+
+      if (correct) {
+        button.classList.add('correct');
+        score++;
+      } else {
+        button.classList.add('wrong');
+        // Show correct answer visually
+        Array.from(buttons).forEach(btn => {
+          const btnText = btn.innerHTML;
+          const correctAnswer = questions[currentQuestionIndex].answers.find(a => a.correct).text;
+          if (btnText === correctAnswer) {
+            btn.classList.add('correct');
+          }
+        });
+      }
+      nextBtn.style.display = 'inline-block';
+      nextBtn.focus();
+    }
+
+    function updateProgressBar() {
+      const progressPercent = ((currentQuestionIndex) / questions.length) * 100;
+      progressBarFill.style.width = `${progressPercent}%`;
+    }
+
+    nextBtn.addEventListener('click', () => {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    });
+
+    function showResult() {
+      quizContainer.style.display = 'none';
+      resultContainer.style.display = 'block';
+      progressBarFill.style.width = '100%';
+      scoreEl.textContent = `You scored ${score} out of ${questions.length} (${Math.round((score/questions.length)*100)}%)`;
+    }
+
+    restartBtn.addEventListener('click', () => {
+      currentQuestionIndex = 0;
+      score = 0;
+      resultContainer.style.display = 'none';
+      quizContainer.style.display = 'block';
+      progressBarFill.style.width = '0%';
+      showQuestion();
+    });
+
+    // Start Quiz
+    showQuestion();
+  </script>
+</body>
+</html>
+
